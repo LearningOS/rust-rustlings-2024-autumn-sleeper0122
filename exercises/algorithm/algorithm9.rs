@@ -2,7 +2,6 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -38,6 +37,20 @@ where
 
     pub fn add(&mut self, value: T) {
         //TODO
+        self.items.push(value);
+        self.count += 1;
+        
+        let mut index = self.count;
+        while index > 1 {
+            let parent_idx = self.parent_idx(index);
+            if (self.comparator)(&self.items[index], &self.items[parent_idx]) {
+                self.items.swap(index, parent_idx);
+                index = parent_idx;
+            }
+            else {
+                break;
+            }
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -58,7 +71,19 @@ where
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
         //TODO
-		0
+		let left = self.left_child_idx(idx);
+        let right = self.right_child_idx(idx);
+
+        if right > self.count {
+            return left
+        }
+
+        if (self.comparator)(&self.items[left], &self.items[right]) {
+            left
+        }
+        else {
+            right
+        }
     }
 }
 
@@ -85,7 +110,26 @@ where
 
     fn next(&mut self) -> Option<T> {
         //TODO
-		None
+		if self.count == 0 {
+            return None;
+        }
+
+        self.items.swap(1, self.count);
+        let removed = self.items.pop();
+        self.count -= 1;
+        
+        let mut index = 1;
+        while self.children_present(index) {
+            let small = self.smallest_child_idx(index);
+            if (self.comparator)(&self.items[small], &self.items[index]) {
+                self.items.swap(index, small);
+                index = small;
+            }
+            else {
+                break;
+            }
+        }
+        removed
     }
 }
 
@@ -130,6 +174,7 @@ mod tests {
         heap.add(9);
         heap.add(11);
         assert_eq!(heap.len(), 4);
+
         assert_eq!(heap.next(), Some(2));
         assert_eq!(heap.next(), Some(4));
         assert_eq!(heap.next(), Some(9));
